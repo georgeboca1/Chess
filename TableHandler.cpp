@@ -11,6 +11,7 @@
 TableHandler::TableHandler() 
 {
 	this->arrangePiecesOnBoard();
+	printf("\nInitialized and arranged pieces on table");
 }
 
 TableHandler::~TableHandler() 
@@ -77,4 +78,9 @@ void TableHandler::debug_printTable()
 		if (i != 0 && i % 8 == 0) printf("\n");
 		if (this->board[i].has_value()) printf("%d ", this->board[i]->getPieceType());
 	}
+}
+
+std::array<std::optional<Piece>, 64> TableHandler::getBoard() 
+{
+	return this->board;
 }

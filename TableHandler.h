@@ -23,5 +23,6 @@ public:
 	bool putPieceAtCoordinate(Piece piece, int x, int y);
 	bool removePieceAtCoordinate(int x, int y);
 	void debug_printTable();
+	std::array<std::optional<Piece>,64> getBoard();
 };
 
