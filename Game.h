@@ -10,6 +10,14 @@ class Game
 private:
 	TableHandler* table;
 	Renderer* renderer;
+	bool moveMade;
+	bool pieceSelected;
+	bool drawRedSquare;
+	int redSquareX;
+	int redSquareY;
+	Piece selectedPiece;
+	int windowWidth, windowHeight;
+
 public:
 	Game();
 	~Game();

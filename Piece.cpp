@@ -1,5 +1,13 @@
 #include "Piece.h"
 #include <vector>
+#include <array>
+#include <optional>
+
+static bool isMoveValid(int x, int y) {
+	if (x <= 8 && x >= 0 && y <= 8 && y >= 0)
+		return true;
+	return false;
+}
 
 pieceValue getPieceValueFromType(pieceType type) 
 {
@@ -26,6 +34,13 @@ Piece::Piece(pieceType _type, pieceColor _color)
 	this->coordinates[1] = 0;
 }
 
+
+Piece::Piece()
+{
+	this->isPawnFirstMove = true;
+	this->coordinates[0] = 0;
+	this->coordinates[1] = 0;
+}
 Piece::~Piece()
 {
 	// ...
@@ -65,52 +80,59 @@ bool Piece::getPawnFirstMove()
 	return this->isPawnFirstMove;
 }
 
-bool Piece::isMoveValid(int _x, int _y)
+std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 {
-
+	std::vector<std::vector<int>> validMoves;
 	switch (this->type)
 	{
-	case PAWN:
-		if (this->isPawnFirstMove && _x == this->coordinates[0] && _y == this->coordinates[1] + 2) 
-			return true; // First move, 2 in front
-		for (int i = -1; i <= 1; i++) 
-			if (_x == this->coordinates[0] + i && _y == this->coordinates[1] + 1) return true; // Diagonal moves + 1 in front
-		return false;
-		break;
-	case KING:
-		for (int i = -1; i <= 1; i++)
-		{
-			if (_x == this->coordinates[0] + i && _y == this->coordinates[1] + 1) return true; // Diagonal moves + 1 in front
-			if (_x == this->coordinates[0] + i && _y == this->coordinates[1] - 1) return true; // Diagonal moves - 1 in back
-		}
-
-		if (_x == this->coordinates[0] - 1 && _y == this->coordinates[1]) return true; // Horizontal moves
-		if (_x == this->coordinates[0] + 1 && _y == this->coordinates[1]) return true; // Horizontal moves
-		return false;
-
-		break;
-	case QUEEN:
-		if (abs(_x - this->coordinates[0]) == abs(_y - this->coordinates[1])) return true; // Diagonal moves
-		if (_x == this->coordinates[0] || _y == this->coordinates[1]) return true; // Horizontal or vertical moves
-		return false;
-		break;
-	case ROOK:
-		if (_x == this->coordinates[0] || _y == this->coordinates[1]) return true; // Horizontal or vertical moves
-		break;
-	case KNIGHT:
-		// L moves
-		if ((_x == this->coordinates[0] + 2 || _x == this->coordinates[0] - 2) && (_y == this->coordinates[1] + 1 || _y == this->coordinates[1] - 1)) return true;
-		if ((_x == this->coordinates[0] + 1 || _x == this->coordinates[0] - 1) && (_y == this->coordinates[1] + 2 || _y == this->coordinates[1] - 2)) return true;
-		return false;
-		break;
-	case BISHOP:
-		if (abs(_x - this->coordinates[0]) == abs(_y - this->coordinates[1])) return true; // Diagonal moves
-		return false;
-		break;
-	default:
-		return false;
-		break;
+		case PAWN:
+			switch (this->color)
+			{
+				case BLACK:
+					if (isMoveValid(this->coordinates[0] + 2, this->coordinates[1]) && this->isPawnFirstMove && pieces[this->coordinates[0] + 2][this->coordinates[1]].getPieceType() == NONE)
+					{
+						validMoves.push_back({ this->coordinates[1], this->coordinates[0] + 1 });
+						validMoves.push_back({ this->coordinates[1], this->coordinates[0] + 2 });
+						break;
+					}
+					if (isMoveValid(this->coordinates[0] + 1,this->coordinates[1]) && pieces[this->coordinates[0] + 1][this->coordinates[1]].getPieceType() == NONE)
+					{
+						validMoves.push_back({ this->coordinates[1], this->coordinates[0] + 1 });
+					}
+					if (isMoveValid(this->coordinates[0] + 1, this->coordinates[1] - 1) && pieces[this->coordinates[0] + 1][this->coordinates[1] - 1].getPieceType() != NONE)
+					{
+						validMoves.push_back({ this->coordinates[1] - 1, this->coordinates[0] + 1 });
+					}
+					if (isMoveValid(this->coordinates[0] + 1, this->coordinates[1] + 1) && pieces[this->coordinates[0] + 1][this->coordinates[1] + 1].getPieceType() != NONE)
+					{
+						validMoves.push_back({ this->coordinates[1] + 1, this->coordinates[0] + 1 });
+					}
+					break;
+				case WHITE:
+					if (isMoveValid(this->coordinates[0] - 2, this->coordinates[1]) && this->isPawnFirstMove && !pieces[this->coordinates[0] - 2][this->coordinates[1]].getPieceType() != NONE)
+					{
+						validMoves.push_back({ this->coordinates[1], this->coordinates[0] - 1 });
+						validMoves.push_back({ this->coordinates[1], this->coordinates[0] - 2 });
+						break;
+					}
+					if (isMoveValid(this->coordinates[0] - 1, this->coordinates[1]) && pieces[this->coordinates[0] - 1][this->coordinates[1]].getPieceType() == NONE)
+					{
+						validMoves.push_back({ this->coordinates[1], this->coordinates[0] - 1 });
+					}
+					if (isMoveValid(this->coordinates[0] - 1, this->coordinates[1] - 1) && pieces[this->coordinates[0] - 1][this->coordinates[1] - 1].getPieceType() != NONE)
+					{
+						validMoves.push_back({ this->coordinates[1] - 1, this->coordinates[0] - 1 });
+					}
+					if (isMoveValid(this->coordinates[0] - 1, this->coordinates[1] + 1) && pieces[this->coordinates[0] - 1][this->coordinates[1] + 1].getPieceType() != NONE)
+					{
+						validMoves.push_back({ this->coordinates[1] + 1, this->coordinates[0] - 1 });
+					}
+			}
+			break;
+		default:
+			break;
 	}
+	return validMoves;
 }
 
 bool Piece::changeCoordinates(int x, int y)
@@ -118,4 +140,14 @@ bool Piece::changeCoordinates(int x, int y)
 	this->coordinates[0] = x;
 	this->coordinates[1] = y;
 	return true;
+}
+
+int Piece::getX()
+{
+	return this->coordinates[0];
+}
+
+int Piece::getY()
+{
+	return this->coordinates[1];
 }

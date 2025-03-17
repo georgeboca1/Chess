@@ -1,5 +1,9 @@
 #pragma once
 #include <vector>
+#include <array>
+#include <optional>
+
+static bool isMoveValid(int x, int y);
 
 typedef enum 
 {
@@ -15,7 +19,8 @@ typedef enum
 typedef enum 
 {
 	WHITE = 0,
-	BLACK = 1
+	BLACK = 1,
+	NOCOLOR = 2
 } pieceColor;
 
 typedef enum 
@@ -40,6 +45,7 @@ class Piece
 
 public:
 	Piece(pieceType _type, pieceColor _color);
+	Piece();
 	~Piece();
 
 	const pieceType getPieceType();
@@ -49,6 +55,8 @@ public:
 	void changePawnFirstMove(bool b);
 	bool getPawnFirstMove();
 	bool changeCoordinates(int x, int y);
-	bool isMoveValid(int x, int y);
+	std::vector<std::vector<int>> getValidMoves(Piece** pieces);
+	int getX();
+	int getY();
 };
 

@@ -9,10 +9,8 @@
 
 class TableHandler
 {
-	//Using a single fixed-size array instead of an two-dimensional array allows us
-	//to manage memory more efficiently, we have less memory fragmentation, faster speeds
-	// row * 8 + col
-	std::array<std::optional<Piece>, 64> board;
+
+	Piece** board;
 
 public:
 	TableHandler();
@@ -23,6 +21,6 @@ public:
 	bool putPieceAtCoordinate(Piece piece, int x, int y);
 	bool removePieceAtCoordinate(int x, int y);
 	void debug_printTable();
-	std::array<std::optional<Piece>,64> getBoard();
+	Piece** getBoard();
 };
 

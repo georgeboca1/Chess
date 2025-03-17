@@ -4,6 +4,7 @@
 #include <string>
 #include <array>
 #include <optional>
+#include <vector>
 #include "Renderer.h"
 #include "Piece.h"
 
@@ -12,6 +13,9 @@ Renderer::Renderer(const char* title, int width, int height)
 	this->title = title;
 	this->width = width;
 	this->height = height;
+	this->squareSizeX = this->width / 8;
+	this->squareSizeY = this->height / 8;
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("SDL could not initialize! SDL_Error: %s ", SDL_GetError());
         return;
@@ -77,62 +81,65 @@ void Renderer::drawBoard()
     SDL_RenderCopy(this->renderer, this->boardTexture, nullptr, &this->boardRect);
 }
 
-void Renderer::drawPieces(std::array<std::optional<Piece>, 64> pieces)
+void Renderer::drawPieces(Piece** pieces)
 {
-	for (int i = 0; i < 64; i++)
+	for (int i = 0; i <= 7; i++)
 	{
-		if (pieces[i].has_value())
-		{
-			SDL_Rect rect = { i % 8 * this->width / 8 + 10, i / 8 * this->height / 8, 80, 80 };
-            switch (pieces[i]->getPieceColor())
+        for (int j = 0; j <= 7; j++)
+        {
+            if (pieces[i][j].getPieceType() != NONE)
             {
-			    case BLACK:
-                    switch (pieces[i]->getPieceType())
+                SDL_Rect rect = { pieces[i][j].getY() * this->squareSizeX + 10, pieces[i][j].getX() * this->squareSizeY + 10, 80, 80};
+                switch (pieces[i][j].getPieceColor())
+                {
+                case BLACK:
+                    switch (pieces[i][j].getPieceType())
                     {
-                        case PAWN:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[3], nullptr, &rect);
-                            break;
-                        case QUEEN:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[4], nullptr, &rect);
-                            break;
-                        case ROOK:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[5], nullptr, &rect);
-                            break;
-                        case KING:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[1], nullptr, &rect);
-                            break;
-                        case BISHOP:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[0], nullptr, &rect);
-                            break;
-                        case KNIGHT:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[2], nullptr, &rect);
-                            break;
+                    case PAWN:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[3], nullptr, &rect);
+                        break;
+                    case QUEEN:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[4], nullptr, &rect);
+                        break;
+                    case ROOK:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[5], nullptr, &rect);
+                        break;
+                    case KING:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[1], nullptr, &rect);
+                        break;
+                    case BISHOP:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[0], nullptr, &rect);
+                        break;
+                    case KNIGHT:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[2], nullptr, &rect);
+                        break;
 
                     }
                     break;
                 case WHITE:
-                    switch (pieces[i]->getPieceType())
+                    switch (pieces[i][j].getPieceType())
                     {
-                        case PAWN:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[9], nullptr, &rect);
-                            break;
-                        case QUEEN:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[10], nullptr, &rect);
-                            break;
-                        case ROOK:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[11], nullptr, &rect);
-                            break;
-                        case KING:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[7], nullptr, &rect);
-                            break;
-                        case BISHOP:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[6], nullptr, &rect);
-                            break;
-                        case KNIGHT:
-                            SDL_RenderCopy(this->renderer, this->pieceTextures[8], nullptr, &rect);
-                            break;
+                    case PAWN:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[9], nullptr, &rect);
+                        break;
+                    case QUEEN:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[10], nullptr, &rect);
+                        break;
+                    case ROOK:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[11], nullptr, &rect);
+                        break;
+                    case KING:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[7], nullptr, &rect);
+                        break;
+                    case BISHOP:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[6], nullptr, &rect);
+                        break;
+                    case KNIGHT:
+                        SDL_RenderCopy(this->renderer, this->pieceTextures[8], nullptr, &rect);
+                        break;
                     }
                     break;
+                }
             }
 		}
 	}
@@ -151,4 +158,28 @@ void Renderer::clear()
 void Renderer::present()
 {
     SDL_RenderPresent(this->renderer);
+}
+
+void Renderer::drawPressedRectangle(int x, int y)
+{
+	SDL_Rect rect = { (x / squareSizeX) * squareSizeX , (y / squareSizeY) * squareSizeY , squareSizeX, squareSizeY};
+	SDL_SetRenderDrawColor(this->renderer, 255, 0, 0, 255);
+	SDL_RenderDrawRect(this->renderer, &rect);
+}
+
+void Renderer::getWindowSize(int* width, int* height)
+{
+	*width = this->width;
+	*height = this->height;
+}
+
+void Renderer::drawValidMoves(Piece piece, Piece** pieces)
+{
+	std::vector<std::vector<int>> validMoves = piece.getValidMoves(pieces);
+	for (auto& move : validMoves)
+	{
+		SDL_Rect rect = { move[0] * this->squareSizeX, move[1] * this->squareSizeY, this->squareSizeX, this->squareSizeY};
+		SDL_SetRenderDrawColor(this->renderer, 0, 255, 0, 255);
+		SDL_RenderDrawRect(this->renderer, &rect);
+	}
 }

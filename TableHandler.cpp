@@ -10,41 +10,46 @@
 
 TableHandler::TableHandler() 
 {
+	this->board = new Piece*[8];
+	for (int i = 0; i <= 7; i++)
+	{
+		this->board[i] = new Piece[8];
+	}
 	this->arrangePiecesOnBoard();
 	printf("\nInitialized and arranged pieces on table");
 }
 
 TableHandler::~TableHandler() 
 {
-
+	delete[] this->board;
 }
 
 Piece TableHandler::getPieceAtCoordinate(int x, int y)
 {
-	if (this->board[x * 8 + y].has_value())
+	if (this->board[x][y].getPieceType() != NONE)
 	{
-		return this->board[x * 8 + y].value();
+		return this->board[x][y];
 	}
 	else
-		return Piece(NONE, BLACK);
+		return Piece(NONE, NOCOLOR);
 }
 
 bool TableHandler::putPieceAtCoordinate(Piece piece, int x, int y)
 {
-	if (piece.isMoveValid(x, y))
-	{
-		if (this->board[x * 8 + y].has_value()) printf("Eaten a piece!\n");
-		this->board[x * 8 + y] = piece;
-		return true;
-	}
-	return false;
+
+	//if (this->board[y * 8 + x].has_value()) printf("Eaten a piece!\n");
+	this->board[x][y] = piece;
+	this->board[x][y].changePawnFirstMove(false);
+	this->board[x][y].changeCoordinates(x, y);
+	return true;
+
 }
 
 bool TableHandler::removePieceAtCoordinate(int x, int y)
 {
-	if (this->board[x * 8 + y].has_value())
+	if (this->board[x][y].getPieceType() != NONE)
 	{
-		this->board[x * 8 + y].reset();
+		this->board[x][y] = Piece(NONE,NOCOLOR);
 		return true;
 	}
 
@@ -55,32 +60,42 @@ void TableHandler::arrangePiecesOnBoard()
 {
 	const std::array<pieceType, 8> backRow = { ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK };
 
+	for (size_t row = 0; row < 8; ++row) {
+		for (size_t col = 0; col < 8; ++col) {
+			board[row][col] = Piece(NONE,NOCOLOR);
+		}
+	}
 	for (size_t col = 0; col < 8; ++col) {
-		board[col] = Piece(backRow[col], BLACK);
-		board[col]->changeCoordinates(col, 0);
-		board[56 + col] = Piece(backRow[col], WHITE);
-		board[56 + col]->changeCoordinates(col, 8);
+		board[0][col] = Piece(backRow[col], BLACK);
+		board[0][col].changeCoordinates(0, col);
+		board[7][col] = Piece(backRow[col], WHITE);
+		board[7][col].changeCoordinates(7, col);
 	}
 
 	for (size_t i = 0; i < 8; i++)
 	{
-		this->board[8 + i] = Piece(PAWN, BLACK);
-		board[8 + i]->changeCoordinates(1,i);
-		this->board[48 + i] = Piece(PAWN, WHITE);
-		board[48 + i]->changeCoordinates(7, i);
+		this->board[1][i] = Piece(PAWN, BLACK);
+		board[1][i].changeCoordinates(1, i);
+		this->board[6][i] = Piece(PAWN, WHITE);
+		board[6][i].changeCoordinates(6, i);
 	}
 }
 
 void TableHandler::debug_printTable()
 {
-	for (int i = 0; i < 64; i++)
+	printf("\n");
+	for (int i = 0; i <= 7; i++)
 	{
-		if (i != 0 && i % 8 == 0) printf("\n");
-		if (this->board[i].has_value()) printf("%d ", this->board[i]->getPieceType());
+		for (int j = 0; j <= 7; j++)
+		{
+			if (this->board[i][j].getPieceType() != NONE) printf("%d ", this->board[i][j].getPieceType());
+		}
+		printf("\n");
 	}
+	printf("\n");
 }
 
-std::array<std::optional<Piece>, 64> TableHandler::getBoard() 
+Piece** TableHandler::getBoard()
 {
 	return this->board;
 }

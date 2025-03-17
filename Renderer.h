@@ -16,6 +16,8 @@ class Renderer
 	SDL_Texture* boardTexture;
 	SDL_Rect boardRect;
 	SDL_Texture* pieceTextures[12];
+	int squareSizeX;
+	int squareSizeY;
 
 public:
 	Renderer(const char* title, int width, int height);
@@ -24,7 +26,11 @@ public:
 	void clear();
 	void present();
 	void drawBoard();
-	void drawPieces(std::array<std::optional<Piece>,64> pieces);
+	void drawPieces(Piece** pieces);
 	void drawInfo();
+	void getMousePosition(int* x, int* y);
+	void getWindowSize(int* x, int* y);
+	void drawPressedRectangle(int x, int y);
+	void drawValidMoves(Piece piece,Piece** pieces);
 };
 
