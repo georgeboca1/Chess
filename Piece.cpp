@@ -4,7 +4,12 @@
 #include <optional>
 
 static bool isMoveValid(int x, int y) {
-	if (x <= 8 && x >= 0 && y <= 8 && y >= 0)
+	if (x < 8 && x >= 0 && y < 8 && y >= 0)
+		return true;
+	return false;
+}
+static bool isSameColor(Piece piece1, Piece piece2) {
+	if (piece1.getPieceColor() == piece2.getPieceColor())
 		return true;
 	return false;
 }
@@ -83,52 +88,372 @@ bool Piece::getPawnFirstMove()
 std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 {
 	std::vector<std::vector<int>> validMoves;
+	int x = this->coordinates[0];
+	int y = this->coordinates[1];
 	switch (this->type)
 	{
 		case PAWN:
 			switch (this->color)
 			{
 				case BLACK:
-					if (isMoveValid(this->coordinates[0] + 2, this->coordinates[1]) && this->isPawnFirstMove && pieces[this->coordinates[0] + 2][this->coordinates[1]].getPieceType() == NONE)
+					if (isMoveValid(x + 2, y) && this->isPawnFirstMove && pieces[x + 2][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + 2][y]))
 					{
-						validMoves.push_back({ this->coordinates[1], this->coordinates[0] + 1 });
-						validMoves.push_back({ this->coordinates[1], this->coordinates[0] + 2 });
+						validMoves.push_back({ y, x + 1 });
+						validMoves.push_back({ y, x + 2 });
 						break;
 					}
-					if (isMoveValid(this->coordinates[0] + 1,this->coordinates[1]) && pieces[this->coordinates[0] + 1][this->coordinates[1]].getPieceType() == NONE)
+					if (isMoveValid(x + 1,y) && pieces[x + 1][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + 1][y]))
 					{
-						validMoves.push_back({ this->coordinates[1], this->coordinates[0] + 1 });
+						validMoves.push_back({ y, x + 1 });
 					}
-					if (isMoveValid(this->coordinates[0] + 1, this->coordinates[1] - 1) && pieces[this->coordinates[0] + 1][this->coordinates[1] - 1].getPieceType() != NONE)
+					if (isMoveValid(x + 1, y - 1) && pieces[x + 1][y - 1].getPieceType() != NONE && !isSameColor(*this, pieces[x + 1][y - 1]))
 					{
-						validMoves.push_back({ this->coordinates[1] - 1, this->coordinates[0] + 1 });
+						validMoves.push_back({ y - 1, x + 1 });
 					}
-					if (isMoveValid(this->coordinates[0] + 1, this->coordinates[1] + 1) && pieces[this->coordinates[0] + 1][this->coordinates[1] + 1].getPieceType() != NONE)
+					if (isMoveValid(x + 1, y + 1) && pieces[x + 1][y + 1].getPieceType() != NONE && !isSameColor(*this, pieces[x + 1][y + 1]))
 					{
-						validMoves.push_back({ this->coordinates[1] + 1, this->coordinates[0] + 1 });
+						validMoves.push_back({ y + 1, x + 1 });
 					}
 					break;
 				case WHITE:
-					if (isMoveValid(this->coordinates[0] - 2, this->coordinates[1]) && this->isPawnFirstMove && !pieces[this->coordinates[0] - 2][this->coordinates[1]].getPieceType() != NONE)
+					if (isMoveValid(x - 2, y) && this->isPawnFirstMove && !pieces[x - 2][y].getPieceType() != NONE && !isSameColor(*this, pieces[x - 2][y]))
 					{
-						validMoves.push_back({ this->coordinates[1], this->coordinates[0] - 1 });
-						validMoves.push_back({ this->coordinates[1], this->coordinates[0] - 2 });
+						validMoves.push_back({ y, x - 1 });
+						validMoves.push_back({ y, x - 2 });
 						break;
 					}
-					if (isMoveValid(this->coordinates[0] - 1, this->coordinates[1]) && pieces[this->coordinates[0] - 1][this->coordinates[1]].getPieceType() == NONE)
+					if (isMoveValid(x - 1, y) && pieces[x - 1][y].getPieceType() == NONE && !isSameColor(*this, pieces[x - 1][y]))
 					{
-						validMoves.push_back({ this->coordinates[1], this->coordinates[0] - 1 });
+						validMoves.push_back({ y, x - 1 });
 					}
-					if (isMoveValid(this->coordinates[0] - 1, this->coordinates[1] - 1) && pieces[this->coordinates[0] - 1][this->coordinates[1] - 1].getPieceType() != NONE)
+					if (isMoveValid(x - 1, y - 1) && pieces[x - 1][y - 1].getPieceType() != NONE && !isSameColor(*this, pieces[x - 1][y - 1]))
 					{
-						validMoves.push_back({ this->coordinates[1] - 1, this->coordinates[0] - 1 });
+						validMoves.push_back({ y - 1, x - 1 });
 					}
-					if (isMoveValid(this->coordinates[0] - 1, this->coordinates[1] + 1) && pieces[this->coordinates[0] - 1][this->coordinates[1] + 1].getPieceType() != NONE)
+					if (isMoveValid(x - 1, y + 1) && pieces[x - 1][y + 1].getPieceType() != NONE && !isSameColor(*this, pieces[x - 1][y + 1]))
 					{
-						validMoves.push_back({ this->coordinates[1] + 1, this->coordinates[0] - 1 });
+						validMoves.push_back({ y + 1, x - 1 });
 					}
+					break;
 			}
 			break;
+		case ROOK:
+			for (int i = 1; i < 8; i++)
+			{
+				if (isMoveValid(x + i, y) )
+				{
+					if (pieces[x + i][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + i][y]))
+					{
+						validMoves.push_back({ y, x + i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x + i][y])) validMoves.push_back({ y, x + i });
+						break;
+					}
+				}
+			}
+			for (int i = -1; i > -8; i--)
+			{
+				if (isMoveValid(x + i, y))
+				{
+					if (pieces[x + i][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + i][y]))
+					{
+						validMoves.push_back({ y, x + i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x + i][y])) validMoves.push_back({ y, x + i});
+						break;
+					}
+				}
+			}
+			for (int i = 1; i < 8; i++)
+			{
+				if (isMoveValid(x, y + i))
+				{
+					if (pieces[x][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x][y + i]))
+					{
+						validMoves.push_back({ y + i, x });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x][y + i])) validMoves.push_back({ y + i, x });;
+						break;
+					}
+				}
+			}
+			for (int i = -1; i > -8; i--)
+			{
+				if (isMoveValid(x, y + i))
+				{
+					if (pieces[x][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x][y + i]))
+					{
+						validMoves.push_back({ y + i, x });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x][y + i])) validMoves.push_back({ y + i, x });
+						break;
+					}
+				}
+			}
+			break;
+		case KNIGHT:
+			if (isMoveValid(x + 2, y + 1) && !isSameColor(*this, pieces[x+2][y+1]))
+			{
+				validMoves.push_back({ y + 1, x + 2 });
+
+			}
+			if (isMoveValid(x + 2, y - 1) && !isSameColor(*this, pieces[x + 2][y - 1]))
+			{
+				validMoves.push_back({ y - 1, x + 2 });
+
+			}
+			if (isMoveValid(x - 2, y + 1) && !isSameColor(*this, pieces[x - 2][y + 1]))
+			{
+				validMoves.push_back({ y + 1, x - 2 });
+				
+			}
+			if (isMoveValid(x - 2, y - 1) && !isSameColor(*this, pieces[x - 2][y - 1]))
+			{
+				validMoves.push_back({ y - 1, x - 2 });
+			}
+			if (isMoveValid(x + 1, y + 2) && !isSameColor(*this, pieces[x + 1][y + 2]))
+			{
+				validMoves.push_back({ y + 2, x + 1 });
+			}
+			if (isMoveValid(x + 1, y - 2) && !isSameColor(*this, pieces[x + 1][y - 2]))
+			{
+				validMoves.push_back({ y - 2, x + 1 });
+			}
+			if (isMoveValid(x - 1, y + 2) && !isSameColor(*this, pieces[x - 1][y + 2]))
+			{
+				validMoves.push_back({ y + 2, x - 1 });
+			}
+			if (isMoveValid(x - 1, y - 2) && !isSameColor(*this, pieces[x - 1][y - 2]))
+			{
+				validMoves.push_back({ y - 2, x - 1 });
+			}
+			break;
+		case BISHOP:
+			for (int i = 1; i < 8; i++)
+			{
+				if (isMoveValid(x + i, y + i))
+				{
+					if (pieces[x + i][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x + i][y + i]))
+					{
+						validMoves.push_back({ y + i, x + i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x + i][y + i])) validMoves.push_back({ y + i, x + i });
+						break;
+					}
+				}
+			}
+			for (int i = -1; i > -8; i--)
+			{
+				if (isMoveValid(x + i, y + i))
+				{
+					if (pieces[x + i][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x + i][y + i]))
+					{
+						validMoves.push_back({ y + i, x + i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x + i][y + i])) validMoves.push_back({ y + i, x + i });
+						break;
+					}
+				}
+			}
+			for (int i = 1; i < 8; i++)
+			{
+				if (isMoveValid(x - i, y + i))
+				{
+					if (pieces[x - i][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x - i][y + i]))
+					{
+						validMoves.push_back({ y + i, x - i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x - i][y + i])) validMoves.push_back({ y + i, x - i });
+						break;
+					}
+				}
+			}
+			for (int i = -1; i > -8; i--)
+			{
+				if (isMoveValid(x - i, y + i))
+				{
+					if (pieces[x - i][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x - i][y + i]))
+					{
+						validMoves.push_back({ y + i, x - i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x - i][y + i])) validMoves.push_back({ y + i, x - i });
+						break;
+					}
+				}
+			}
+		case KING:
+			if (isMoveValid(x + 1, y) && !isSameColor(*this, pieces[x + 1][y]))
+			{
+				validMoves.push_back({ y, x + 1 });
+			}
+			if (isMoveValid(x - 1, y) && !isSameColor(*this, pieces[x - 1][y]))
+			{
+				validMoves.push_back({ y, x - 1 });
+			}
+			if (isMoveValid(x, y + 1) && !isSameColor(*this, pieces[x][y + 1]))
+			{
+				validMoves.push_back({ y + 1, x });
+			}
+			if (isMoveValid(x, y - 1) && !isSameColor(*this, pieces[x][y - 1]))
+			{
+				validMoves.push_back({ y - 1, x });
+			}
+			if (isMoveValid(x + 1, y + 1) && !isSameColor(*this, pieces[x + 1][y + 1]))
+			{
+				validMoves.push_back({ y + 1, x + 1 });
+			}
+			if (isMoveValid(x + 1, y - 1) && !isSameColor(*this, pieces[x + 1][y - 1]))
+			{
+				validMoves.push_back({ y - 1, x + 1 });
+			}
+			if (isMoveValid(x - 1, y + 1) && !isSameColor(*this, pieces[x - 1][y + 1]))
+			{
+				validMoves.push_back({ y + 1, x - 1 });
+			}
+			if (isMoveValid(x - 1, y - 1) && !isSameColor(*this, pieces[x - 1][y - 1]))
+			{
+				validMoves.push_back({ y - 1, x - 1 });
+			}
+			break;
+		case QUEEN:
+			for (int i = 1; i < 8; i++)
+			{
+				if (isMoveValid(x + i, y))
+				{
+					if (pieces[x + i][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + i][y]))
+					{
+						validMoves.push_back({ y, x + i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x + i][y])) validMoves.push_back({ y, x + i });
+						break;
+					}
+				}
+			}
+			for (int i = -1; i > -8; i--)
+			{
+				if (isMoveValid(x + i, y))
+				{
+					if (pieces[x + i][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + i][y]))
+					{
+						validMoves.push_back({ y, x + i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x + i][y])) validMoves.push_back({ y, x + i });
+						break;
+					}
+				}
+			}
+			for (int i = 1; i < 8; i++)
+			{
+				if (isMoveValid(x, y + i))
+				{
+					if (pieces[x][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x][y + i]))
+					{
+						validMoves.push_back({ y + i, x });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x][y + i])) validMoves.push_back({ y + i, x });;
+						break;
+					}
+				}
+			}
+			for (int i = -1; i > -8; i--)
+			{
+				if (isMoveValid(x, y + i))
+				{
+					if (pieces[x][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x][y + i]))
+					{
+						validMoves.push_back({ y + i, x });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x][y + i])) validMoves.push_back({ y + i, x });
+						break;
+					}
+				}
+			}
+			for (int i = 1; i < 8; i++)
+			{
+				if (isMoveValid(x + i, y + i))
+				{
+					if (pieces[x + i][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x + i][y + i]))
+					{
+						validMoves.push_back({ y + i, x + i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x + i][y + i])) validMoves.push_back({ y + i, x + i });
+						break;
+					}
+				}
+			}
+			for (int i = -1; i > -8; i--)
+			{
+				if (isMoveValid(x + i, y + i))
+				{
+					if (pieces[x + i][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x + i][y + i]))
+					{
+						validMoves.push_back({ y + i, x + i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x + i][y + i])) validMoves.push_back({ y + i, x + i });
+						break;
+					}
+				}
+			}
+			for (int i = 1; i < 8; i++)
+			{
+				if (isMoveValid(x - i, y + i))
+				{
+					if (pieces[x - i][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x - i][y + i]))
+					{
+						validMoves.push_back({ y + i, x - i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x - i][y + i])) validMoves.push_back({ y + i, x - i });
+						break;
+					}
+				}
+			}
+			for (int i = -1; i > -8; i--)
+			{
+				if (isMoveValid(x - i, y + i))
+				{
+					if (pieces[x - i][y + i].getPieceType() == NONE && !isSameColor(*this, pieces[x - i][y + i]))
+					{
+						validMoves.push_back({ y + i, x - i });
+					}
+					else
+					{
+						if (!isSameColor(*this, pieces[x - i][y + i])) validMoves.push_back({ y + i, x - i });
+						break;
+					}
+				}
+			}
+			break;
+
 		default:
 			break;
 	}

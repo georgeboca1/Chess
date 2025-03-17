@@ -17,6 +17,7 @@ private:
 	int redSquareY;
 	Piece selectedPiece;
 	int windowWidth, windowHeight;
+	bool playerTurn;
 
 public:
 	Game();

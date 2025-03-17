@@ -14,6 +14,7 @@ Game::Game()
     this->moveMade = false;
     this->renderer->getWindowSize(&this->windowWidth, &this->windowHeight);
     this->pieceSelected = false;
+    this->playerTurn = true;
 }
 
 Game::~Game()
@@ -38,6 +39,7 @@ void Game::loop()
     while (isRunning) 
     {
         // Handle events
+        Uint64 start = SDL_GetPerformanceCounter();
 
         while (SDL_PollEvent(&event)) 
         {
@@ -47,7 +49,7 @@ void Game::loop()
                     isRunning = false;
                     break;
                 case SDL_MOUSEBUTTONDOWN:
-                    if (event.button.button == 1)
+                    if (event.button.button == 1 && playerTurn)
                     {
                         int x = event.button.x / (this->windowWidth / 8);
                         int y = event.button.y / (this->windowHeight / 8);
@@ -61,19 +63,12 @@ void Game::loop()
                                 {
                                     this->table->removePieceAtCoordinate(this->selectedPiece.getX(), this->selectedPiece.getY());
                                     this->selectedPiece.changeCoordinates(x, y);
-                                    /*this->renderer->clear();
-                                    this->renderer->drawBoard();
-                                    this->renderer->drawPieces(this->table->getBoard());*/
-                                    /*this->renderer->present();*/
                                     this->table->putPieceAtCoordinate(this->selectedPiece, y, x);
-                                    /*this->renderer->clear();
-                                    this->renderer->drawBoard();
-                                    this->renderer->drawPieces(this->table->getBoard());
-                                    this->renderer->present();*/
                                     this->table->debug_printTable();
                                     this->moveMade = true;
                                     this->pieceSelected = false;
                                     this->selectedPiece = Piece();
+									this->playerTurn = !this->playerTurn;
                                 }
                             }
                         }
@@ -87,6 +82,12 @@ void Game::loop()
                             this->redSquareY = event.button.y;
                             this->selectedPiece = this->table->getPieceAtCoordinate(y, x);
                             this->pieceSelected = true;
+							/*if (this->selectedPiece.getPieceColor() != WHITE || this->selectedPiece.getPieceType() == NONE)
+							{*/
+								//this->pieceSelected = false;
+								//this->drawRedSquare = false;
+								//this->selectedPiece = Piece(NONE, NOCOLOR);
+							//}
                             this->renderer->drawValidMoves(this->selectedPiece, this->table->getBoard());
                         }
                     }
@@ -95,7 +96,6 @@ void Game::loop()
             }
             
         }
-        Uint64 start = SDL_GetPerformanceCounter();
 
         this->renderer->clear();
         this->renderer->drawBoard();
@@ -117,11 +117,11 @@ void Game::loop()
         printf("%s", SDL_GetError());
         this->renderer->present();
 
-        /*Uint64 end = SDL_GetPerformanceCounter();
-        if (frameRateCount % 10 == 0) {
+        Uint64 end = SDL_GetPerformanceCounter();
+        if (frameRateCount % 30 == 0) {
             float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
             printf("FPS: %f\n", 1 / elapsed);
-        }*/
+        }
 
         frameRateCount++;
         SDL_Delay(6);

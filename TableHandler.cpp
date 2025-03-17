@@ -89,6 +89,7 @@ void TableHandler::debug_printTable()
 		for (int j = 0; j <= 7; j++)
 		{
 			if (this->board[i][j].getPieceType() != NONE) printf("%d ", this->board[i][j].getPieceType());
+			else printf("  ");
 		}
 		printf("\n");
 	}
