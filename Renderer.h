@@ -32,5 +32,6 @@ public:
 	void getWindowSize(int* x, int* y);
 	void drawPressedRectangle(int x, int y);
 	void drawValidMoves(Piece piece,Piece** pieces);
+	void drawCheck(int x, int y);
 };
 

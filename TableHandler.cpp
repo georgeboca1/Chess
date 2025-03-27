@@ -45,6 +45,20 @@ bool TableHandler::putPieceAtCoordinate(Piece piece, int x, int y)
 
 }
 
+std::vector<int> TableHandler::getPieceCoordinates(pieceType type, pieceColor color)
+{
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (this->board[i][j].getPieceType() == type && this->board[i][j].getPieceColor() == color)
+			{
+				return { i, j };
+			}
+		}
+	}
+}
+
 bool TableHandler::removePieceAtCoordinate(int x, int y)
 {
 	if (this->board[x][y].getPieceType() != NONE)

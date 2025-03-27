@@ -42,6 +42,9 @@ Piece::Piece(pieceType _type, pieceColor _color)
 
 Piece::Piece()
 {
+	this->type = NONE;
+	this->color = NOCOLOR;
+	this->value = NO_VALUE;
 	this->isPawnFirstMove = true;
 	this->coordinates[0] = 0;
 	this->coordinates[1] = 0;
@@ -85,7 +88,7 @@ bool Piece::getPawnFirstMove()
 	return this->isPawnFirstMove;
 }
 
-std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
+std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces, bool isForCheck)
 {
 	std::vector<std::vector<int>> validMoves;
 	int x = this->coordinates[0];
@@ -96,44 +99,73 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 			switch (this->color)
 			{
 				case BLACK:
-					if (isMoveValid(x + 2, y) && this->isPawnFirstMove && pieces[x + 2][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + 2][y]))
+					if (!isForCheck)
 					{
-						validMoves.push_back({ y, x + 1 });
-						validMoves.push_back({ y, x + 2 });
-						break;
+						if (isMoveValid(x + 2, y) && this->isPawnFirstMove && pieces[x + 2][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + 2][y]))
+						{
+							validMoves.push_back({ y, x + 1 });
+							validMoves.push_back({ y, x + 2 });
+							break;
+						}
+						if (isMoveValid(x + 1, y) && pieces[x + 1][y].getPieceType() == NONE  && !isSameColor(*this, pieces[x + 1][y]))
+						{
+							validMoves.push_back({ y, x + 1 });
+						}
+						if (isMoveValid(x + 1, y - 1) && pieces[x + 1][y - 1].getPieceType() != NONE && pieces[x + 1][y - 1].getPieceType() != KING &&  !isSameColor(*this, pieces[x + 1][y - 1]))
+						{
+							validMoves.push_back({ y - 1, x + 1 });
+						}
+						if (isMoveValid(x + 1, y + 1) && pieces[x + 1][y + 1].getPieceType() != NONE && pieces[x + 1][y + 1].getPieceType() != KING && !isSameColor(*this, pieces[x + 1][y + 1]))
+						{
+							validMoves.push_back({ y + 1, x + 1 });
+						}
 					}
-					if (isMoveValid(x + 1,y) && pieces[x + 1][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + 1][y]))
+					else
 					{
-						validMoves.push_back({ y, x + 1 });
-					}
-					if (isMoveValid(x + 1, y - 1) && pieces[x + 1][y - 1].getPieceType() != NONE && !isSameColor(*this, pieces[x + 1][y - 1]))
-					{
-						validMoves.push_back({ y - 1, x + 1 });
-					}
-					if (isMoveValid(x + 1, y + 1) && pieces[x + 1][y + 1].getPieceType() != NONE && !isSameColor(*this, pieces[x + 1][y + 1]))
-					{
-						validMoves.push_back({ y + 1, x + 1 });
+						if (isMoveValid(x + 1, y - 1) && !isSameColor(*this, pieces[x + 1][y - 1]))
+						{
+							validMoves.push_back({ y - 1, x + 1 });
+						}
+						if (isMoveValid(x + 1, y + 1) && !isSameColor(*this, pieces[x + 1][y + 1]))
+						{
+							validMoves.push_back({ y + 1, x + 1 });
+						}
 					}
 					break;
 				case WHITE:
-					if (isMoveValid(x - 2, y) && this->isPawnFirstMove && !pieces[x - 2][y].getPieceType() != NONE && !isSameColor(*this, pieces[x - 2][y]))
+					if (!isForCheck)
 					{
-						validMoves.push_back({ y, x - 1 });
-						validMoves.push_back({ y, x - 2 });
-						break;
+						if (isMoveValid(x - 2, y) && this->isPawnFirstMove && !pieces[x - 2][y].getPieceType() != NONE && !isSameColor(*this, pieces[x - 2][y]))
+						{
+							validMoves.push_back({ y, x - 1 });
+							validMoves.push_back({ y, x - 2 });
+							break;
+						}
+						if (isMoveValid(x - 1, y) && pieces[x - 1][y].getPieceType() == NONE && !isSameColor(*this, pieces[x - 1][y]))
+						{
+							validMoves.push_back({ y, x - 1 });
+						}
+						if (isMoveValid(x - 1, y - 1) && pieces[x - 1][y - 1].getPieceType() != NONE && pieces[x - 1][y - 1].getPieceType() != KING && !isSameColor(*this, pieces[x - 1][y - 1]))
+						{
+							validMoves.push_back({ y - 1, x - 1 });
+						}
+						if (isMoveValid(x - 1, y + 1) && pieces[x - 1][y + 1].getPieceType() != NONE && pieces[x - 1][y + 1].getPieceType() != KING && !isSameColor(*this, pieces[x - 1][y + 1]))
+						{
+							validMoves.push_back({ y + 1, x - 1 });
+						}
 					}
-					if (isMoveValid(x - 1, y) && pieces[x - 1][y].getPieceType() == NONE && !isSameColor(*this, pieces[x - 1][y]))
+					else
 					{
-						validMoves.push_back({ y, x - 1 });
+						if (isMoveValid(x - 1, y - 1) && !isSameColor(*this, pieces[x + 1][y - 1]))
+						{
+							validMoves.push_back({ y - 1, x + 1 });
+						}
+						if (isMoveValid(x - 1, y + 1) && !isSameColor(*this, pieces[x + 1][y + 1]))
+						{
+							validMoves.push_back({ y + 1, x + 1 });
+						}
 					}
-					if (isMoveValid(x - 1, y - 1) && pieces[x - 1][y - 1].getPieceType() != NONE && !isSameColor(*this, pieces[x - 1][y - 1]))
-					{
-						validMoves.push_back({ y - 1, x - 1 });
-					}
-					if (isMoveValid(x - 1, y + 1) && pieces[x - 1][y + 1].getPieceType() != NONE && !isSameColor(*this, pieces[x - 1][y + 1]))
-					{
-						validMoves.push_back({ y + 1, x - 1 });
-					}
+
 					break;
 			}
 			break;
@@ -148,7 +180,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x + i][y])) validMoves.push_back({ y, x + i });
+						if (!isSameColor(*this, pieces[x + i][y]) && pieces[x + i][y].getPieceType() != KING) validMoves.push_back({y, x + i});
 						break;
 					}
 				}
@@ -163,7 +195,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x + i][y])) validMoves.push_back({ y, x + i});
+						if (!isSameColor(*this, pieces[x + i][y]) && pieces[x + i][y].getPieceType() != KING) validMoves.push_back({ y, x + i});
 						break;
 					}
 				}
@@ -178,7 +210,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x][y + i])) validMoves.push_back({ y + i, x });;
+						if (!isSameColor(*this, pieces[x][y + i]) && pieces[x][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x });;
 						break;
 					}
 				}
@@ -193,45 +225,45 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x][y + i])) validMoves.push_back({ y + i, x });
+						if (!isSameColor(*this, pieces[x][y + i]) && pieces[x][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x });
 						break;
 					}
 				}
 			}
 			break;
 		case KNIGHT:
-			if (isMoveValid(x + 2, y + 1) && !isSameColor(*this, pieces[x+2][y+1]))
+			if (isMoveValid(x + 2, y + 1) && !isSameColor(*this, pieces[x+2][y+1]) && pieces[x + 2][y + 1].getPieceType() != KING)
 			{
 				validMoves.push_back({ y + 1, x + 2 });
 
 			}
-			if (isMoveValid(x + 2, y - 1) && !isSameColor(*this, pieces[x + 2][y - 1]))
+			if (isMoveValid(x + 2, y - 1) && !isSameColor(*this, pieces[x + 2][y - 1]) && pieces[x + 2][y - 1].getPieceType() != KING)
 			{
 				validMoves.push_back({ y - 1, x + 2 });
 
 			}
-			if (isMoveValid(x - 2, y + 1) && !isSameColor(*this, pieces[x - 2][y + 1]))
+			if (isMoveValid(x - 2, y + 1) && !isSameColor(*this, pieces[x - 2][y + 1]) && pieces[x - 2][y + 1].getPieceType() != KING)
 			{
 				validMoves.push_back({ y + 1, x - 2 });
 				
 			}
-			if (isMoveValid(x - 2, y - 1) && !isSameColor(*this, pieces[x - 2][y - 1]))
+			if (isMoveValid(x - 2, y - 1) && !isSameColor(*this, pieces[x - 2][y - 1]) && pieces[x - 2][y - 1].getPieceType() != KING)
 			{
 				validMoves.push_back({ y - 1, x - 2 });
 			}
-			if (isMoveValid(x + 1, y + 2) && !isSameColor(*this, pieces[x + 1][y + 2]))
+			if (isMoveValid(x + 1, y + 2) && !isSameColor(*this, pieces[x + 1][y + 2]) && pieces[x + 1][y + 2].getPieceType() != KING)
 			{
 				validMoves.push_back({ y + 2, x + 1 });
 			}
-			if (isMoveValid(x + 1, y - 2) && !isSameColor(*this, pieces[x + 1][y - 2]))
+			if (isMoveValid(x + 1, y - 2) && !isSameColor(*this, pieces[x + 1][y - 2]) && pieces[x + 1][y - 2].getPieceType() != KING)
 			{
 				validMoves.push_back({ y - 2, x + 1 });
 			}
-			if (isMoveValid(x - 1, y + 2) && !isSameColor(*this, pieces[x - 1][y + 2]))
+			if (isMoveValid(x - 1, y + 2) && !isSameColor(*this, pieces[x - 1][y + 2]) && pieces[x - 1][y + 2].getPieceType() != KING)
 			{
 				validMoves.push_back({ y + 2, x - 1 });
 			}
-			if (isMoveValid(x - 1, y - 2) && !isSameColor(*this, pieces[x - 1][y - 2]))
+			if (isMoveValid(x - 1, y - 2) && !isSameColor(*this, pieces[x - 1][y - 2]) && pieces[x - 1][y - 2].getPieceType() != KING)
 			{
 				validMoves.push_back({ y - 2, x - 1 });
 			}
@@ -247,7 +279,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x + i][y + i])) validMoves.push_back({ y + i, x + i });
+						if (!isSameColor(*this, pieces[x + i][y + i]) && pieces[x + i][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x + i });
 						break;
 					}
 				}
@@ -262,7 +294,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x + i][y + i])) validMoves.push_back({ y + i, x + i });
+						if (!isSameColor(*this, pieces[x + i][y + i]) && pieces[x + i][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x + i });
 						break;
 					}
 				}
@@ -277,7 +309,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x - i][y + i])) validMoves.push_back({ y + i, x - i });
+						if (!isSameColor(*this, pieces[x - i][y + i]) && pieces[x - i][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x - i });
 						break;
 					}
 				}
@@ -292,43 +324,66 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x - i][y + i])) validMoves.push_back({ y + i, x - i });
+						if (!isSameColor(*this, pieces[x - i][y + i]) && pieces[x - i][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x - i });
 						break;
 					}
 				}
 			}
+			break;
 		case KING:
-			if (isMoveValid(x + 1, y) && !isSameColor(*this, pieces[x + 1][y]))
+			if (isForCheck)
 			{
-				validMoves.push_back({ y, x + 1 });
+				for (int dx = -1; dx <= 1; dx++)
+				{
+					for (int dy = -1; dy <= 1; dy++)
+					{
+						if (dx == 0 && dy == 0) continue;
+						int newX = x + dx;
+						int newY = y + dy;
+						if (isMoveValid(newX, newY) && !isSameColor(*this, pieces[newX][newY]))
+						{
+							validMoves.push_back({ newY, newX });
+						}
+					}
+				}
+				break;
 			}
-			if (isMoveValid(x - 1, y) && !isSameColor(*this, pieces[x - 1][y]))
+			for (int dx = -1; dx <= 1; dx++)
 			{
-				validMoves.push_back({ y, x - 1 });
-			}
-			if (isMoveValid(x, y + 1) && !isSameColor(*this, pieces[x][y + 1]))
-			{
-				validMoves.push_back({ y + 1, x });
-			}
-			if (isMoveValid(x, y - 1) && !isSameColor(*this, pieces[x][y - 1]))
-			{
-				validMoves.push_back({ y - 1, x });
-			}
-			if (isMoveValid(x + 1, y + 1) && !isSameColor(*this, pieces[x + 1][y + 1]))
-			{
-				validMoves.push_back({ y + 1, x + 1 });
-			}
-			if (isMoveValid(x + 1, y - 1) && !isSameColor(*this, pieces[x + 1][y - 1]))
-			{
-				validMoves.push_back({ y - 1, x + 1 });
-			}
-			if (isMoveValid(x - 1, y + 1) && !isSameColor(*this, pieces[x - 1][y + 1]))
-			{
-				validMoves.push_back({ y + 1, x - 1 });
-			}
-			if (isMoveValid(x - 1, y - 1) && !isSameColor(*this, pieces[x - 1][y - 1]))
-			{
-				validMoves.push_back({ y - 1, x - 1 });
+				for (int dy = -1; dy <= 1; dy++)
+				{
+					if (dx == 0 && dy == 0) continue;
+					int newX = x + dx;
+					int newY = y + dy;
+					if (isMoveValid(newX, newY) && !isSameColor(*this, pieces[newX][newY]))
+					{
+						bool isGuarded = false;
+						for (int i = 0; i < 8; i++)
+						{
+							for (int j = 0; j < 8; j++)
+							{
+								if (pieces[i][j].getPieceType() != KING && pieces[i][j].getPieceColor() != this->color)
+								{
+									std::vector<std::vector<int>> opponentMoves = pieces[i][j].getValidMoves(pieces, true);
+									for (const auto& move : opponentMoves)
+									{
+										if (move[0] == newY && move[1] == newX)
+										{
+											isGuarded = true;
+											break;
+										}
+									}
+								}
+								if (isGuarded) break;
+							}
+							if (isGuarded) break;
+						}
+						if (!isGuarded)
+						{
+							validMoves.push_back({ newY, newX });
+						}
+					}
+				}
 			}
 			break;
 		case QUEEN:
@@ -342,7 +397,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x + i][y])) validMoves.push_back({ y, x + i });
+						if (!isSameColor(*this, pieces[x + i][y]) && pieces[x + i][y].getPieceType() != KING) validMoves.push_back({ y, x + i });
 						break;
 					}
 				}
@@ -357,7 +412,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x + i][y])) validMoves.push_back({ y, x + i });
+						if (!isSameColor(*this, pieces[x + i][y]) && pieces[x + i][y].getPieceType() != KING) validMoves.push_back({ y, x + i });
 						break;
 					}
 				}
@@ -372,7 +427,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x][y + i])) validMoves.push_back({ y + i, x });;
+						if (!isSameColor(*this, pieces[x][y + i]) && pieces[x][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x });;
 						break;
 					}
 				}
@@ -387,7 +442,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x][y + i])) validMoves.push_back({ y + i, x });
+						if (!isSameColor(*this, pieces[x][y + i]) && pieces[x][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x });
 						break;
 					}
 				}
@@ -402,7 +457,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x + i][y + i])) validMoves.push_back({ y + i, x + i });
+						if (!isSameColor(*this, pieces[x + i][y + i]) && pieces[x + i][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x + i });
 						break;
 					}
 				}
@@ -417,7 +472,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x + i][y + i])) validMoves.push_back({ y + i, x + i });
+						if (!isSameColor(*this, pieces[x + i][y + i]) && pieces[x + i][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x + i });
 						break;
 					}
 				}
@@ -432,7 +487,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x - i][y + i])) validMoves.push_back({ y + i, x - i });
+						if (!isSameColor(*this, pieces[x - i][y + i]) && pieces[x - i][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x - i });
 						break;
 					}
 				}
@@ -447,7 +502,7 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces)
 					}
 					else
 					{
-						if (!isSameColor(*this, pieces[x - i][y + i])) validMoves.push_back({ y + i, x - i });
+						if (!isSameColor(*this, pieces[x - i][y + i]) && pieces[x - i][y + i].getPieceType() != KING) validMoves.push_back({ y + i, x - i });
 						break;
 					}
 				}
@@ -475,4 +530,38 @@ int Piece::getX()
 int Piece::getY()
 {
 	return this->coordinates[1];
+}
+
+bool isKinginCheck(Piece** pieces, pieceColor color)
+{
+	std::vector<int> kingCoords;
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (pieces[i][j].getPieceType() == KING && pieces[i][j].getPieceColor() == color)
+			{
+				kingCoords = { i, j };
+			}
+		}
+	}
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			std::vector<std::vector<int>> available_moves = pieces[i][j].getValidMoves(pieces, false);
+			for (int k = 0; k < available_moves.size(); k++)
+			{
+				if (pieces[kingCoords[0]][kingCoords[1]].getPieceColor() != pieces[i][j].getPieceColor())
+				{
+					if (available_moves[k][0] == kingCoords[1] && available_moves[k][1] == kingCoords[0])
+					{
+						return true;
+					}
+				}
+			}
+		
+		}
+	}
+	return false;
 }

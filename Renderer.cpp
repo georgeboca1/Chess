@@ -175,11 +175,18 @@ void Renderer::getWindowSize(int* width, int* height)
 
 void Renderer::drawValidMoves(Piece piece, Piece** pieces)
 {
-	std::vector<std::vector<int>> validMoves = piece.getValidMoves(pieces);
+	std::vector<std::vector<int>> validMoves = piece.getValidMoves(pieces, false);
 	for (auto& move : validMoves)
 	{
 		SDL_Rect rect = { move[0] * this->squareSizeX, move[1] * this->squareSizeY, this->squareSizeX, this->squareSizeY};
 		SDL_SetRenderDrawColor(this->renderer, 0, 255, 0, 255);
 		SDL_RenderDrawRect(this->renderer, &rect);
 	}
+}
+
+void Renderer::drawCheck(int x, int y)
+{
+	SDL_Rect rect = { x * this->squareSizeX, y * this->squareSizeY, this->squareSizeX, this->squareSizeY };
+	SDL_SetRenderDrawColor(this->renderer, 255, 123, 123, 255);
+	SDL_RenderDrawRect(this->renderer, &rect);
 }

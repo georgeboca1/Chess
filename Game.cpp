@@ -49,14 +49,14 @@ void Game::loop()
                     isRunning = false;
                     break;
                 case SDL_MOUSEBUTTONDOWN:
-                    if (event.button.button == 1 && playerTurn)
+                    if (event.button.button == 1)
                     {
                         int x = event.button.x / (this->windowWidth / 8);
                         int y = event.button.y / (this->windowHeight / 8);
 						if (pieceSelected) //&& this->table->getPieceAtCoordinate(y, x).getPieceType() == NONE)
                         {
                             this->renderer->drawValidMoves(this->selectedPiece, this->table->getBoard());
-                            std::vector<std::vector<int>> moves = this->selectedPiece.getValidMoves(this->table->getBoard());
+                            std::vector<std::vector<int>> moves = this->selectedPiece.getValidMoves(this->table->getBoard(), false);
                             for (auto& move : moves)
                             {
                                 if (move[0] == x && move[1] == y)
@@ -105,6 +105,11 @@ void Game::loop()
         if (this->drawRedSquare)
             this->renderer->drawPressedRectangle(this->redSquareX, this->redSquareY);
 
+		if (isKinginCheck(this->table->getBoard(), WHITE))
+		{
+			std::vector<int> kingCoords = this->table->getPieceCoordinates(KING, WHITE);
+			this->renderer->drawCheck(kingCoords[1], kingCoords[0]);
+		}
         
             
         if (this->moveMade)
@@ -112,7 +117,6 @@ void Game::loop()
             this->drawRedSquare = false;
             this->moveMade = false;
         }
-
 
         printf("%s", SDL_GetError());
         this->renderer->present();

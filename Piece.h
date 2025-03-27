@@ -3,7 +3,7 @@
 #include <array>
 #include <optional>
 
-static bool isMoveValid(int x, int y);
+class Piece; // Forward declaration
 
 typedef enum 
 {
@@ -34,6 +34,9 @@ typedef enum
 } pieceValue;
 
 pieceValue getPieceValueFromType(pieceType type);
+static bool isMoveValid(int x, int y);
+bool isKinginCheck(Piece** pieces, pieceColor color);
+
 
 class Piece
 {
@@ -55,8 +58,7 @@ public:
 	void changePawnFirstMove(bool b);
 	bool getPawnFirstMove();
 	bool changeCoordinates(int x, int y);
-	std::vector<std::vector<int>> getValidMoves(Piece** pieces);
+	std::vector<std::vector<int>> getValidMoves(Piece** table, bool isForCheck);
 	int getX();
 	int getY();
 };
-
