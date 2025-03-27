@@ -340,47 +340,49 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces, bool isForChe
 						if (dx == 0 && dy == 0) continue;
 						int newX = x + dx;
 						int newY = y + dy;
-						if (isMoveValid(newX, newY) && !isSameColor(*this, pieces[newX][newY]))
+						if (isMoveValid(newX, newY))
 						{
 							validMoves.push_back({ newY, newX });
 						}
 					}
 				}
-				break;
 			}
-			for (int dx = -1; dx <= 1; dx++)
+			else
 			{
-				for (int dy = -1; dy <= 1; dy++)
+				for (int dx = -1; dx <= 1; dx++)
 				{
-					if (dx == 0 && dy == 0) continue;
-					int newX = x + dx;
-					int newY = y + dy;
-					if (isMoveValid(newX, newY) && !isSameColor(*this, pieces[newX][newY]))
+					for (int dy = -1; dy <= 1; dy++)
 					{
-						bool isGuarded = false;
-						for (int i = 0; i < 8; i++)
+						if (dx == 0 && dy == 0) continue;
+						int newX = x + dx;
+						int newY = y + dy;
+						if (isMoveValid(newX, newY) && !isSameColor(*this, pieces[newX][newY]))
 						{
-							for (int j = 0; j < 8; j++)
+							bool isGuarded = false;
+							for (int i = 0; i < 8; i++)
 							{
-								if (pieces[i][j].getPieceType() != KING && pieces[i][j].getPieceColor() != this->color)
+								for (int j = 0; j < 8; j++)
 								{
-									std::vector<std::vector<int>> opponentMoves = pieces[i][j].getValidMoves(pieces, true);
-									for (const auto& move : opponentMoves)
+									if (pieces[i][j].getPieceColor() != this->color)
 									{
-										if (move[0] == newY && move[1] == newX)
+										std::vector<std::vector<int>> opponentMoves = pieces[i][j].getValidMoves(pieces, true);
+										for (const auto& move : opponentMoves)
 										{
-											isGuarded = true;
-											break;
+											if (move[0] == newY && move[1] == newX)
+											{
+												isGuarded = true;
+												break;
+											}
 										}
 									}
+									if (isGuarded) break;
 								}
 								if (isGuarded) break;
 							}
-							if (isGuarded) break;
-						}
-						if (!isGuarded)
-						{
-							validMoves.push_back({ newY, newX });
+							if (!isGuarded)
+							{
+								validMoves.push_back({ newY, newX });
+							}
 						}
 					}
 				}
