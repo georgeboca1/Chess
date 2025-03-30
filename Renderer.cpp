@@ -170,7 +170,7 @@ void Renderer::drawPressedRectangle(int x, int y)
 {
 	SDL_Rect rect = { (x / squareSizeX) * squareSizeX + 1 , (y / squareSizeY) * squareSizeY + 1, squareSizeX, squareSizeY};
 	SDL_SetRenderDrawColor(this->renderer, 255, 0, 0, 0);
-    SDL_RenderFillRect(this->renderer, &rect);
+    SDL_RenderDrawRect(this->renderer, &rect);
 }
 
 void Renderer::getWindowSize(int* width, int* height)
