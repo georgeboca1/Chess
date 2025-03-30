@@ -44,8 +44,10 @@ Renderer::Renderer(const char* title, int width, int height)
     }
     printf("\nSuccesfully initialized SDL and SDL_image");
     this->boardTexture = IMG_LoadTexture(this->renderer, "img\\board\\blue2.png");
+
     if (!this->boardTexture)
         printf("Failed to load board image! SDL_Error: %s ", SDL_GetError());
+
     this->boardRect = { 0, 0, this->width, this->height };
 
 	this->pieceTextures[0] = IMG_LoadTexture(this->renderer, "img\\pieces\\bB.png");
@@ -66,7 +68,11 @@ Renderer::Renderer(const char* title, int width, int height)
 		if (!this->pieceTextures[i])
 			printf("\nFailed to load piece image! SDL_Error: %s ", SDL_GetError());
 	}
+
+    this->moveTexture = IMG_LoadTexture(this->renderer, "img\\utils\\validMove.png");
+    this->moveTexture2 = IMG_LoadTexture(this->renderer, "img\\utils\\validMoveWithPiece.png");
 	printf("\nLoaded all textures");
+
 }
 
 Renderer::~Renderer()
@@ -162,9 +168,9 @@ void Renderer::present()
 
 void Renderer::drawPressedRectangle(int x, int y)
 {
-	SDL_Rect rect = { (x / squareSizeX) * squareSizeX , (y / squareSizeY) * squareSizeY , squareSizeX, squareSizeY};
-	SDL_SetRenderDrawColor(this->renderer, 255, 0, 0, 255);
-	SDL_RenderDrawRect(this->renderer, &rect);
+	SDL_Rect rect = { (x / squareSizeX) * squareSizeX + 1 , (y / squareSizeY) * squareSizeY + 1, squareSizeX, squareSizeY};
+	SDL_SetRenderDrawColor(this->renderer, 255, 0, 0, 0);
+    SDL_RenderFillRect(this->renderer, &rect);
 }
 
 void Renderer::getWindowSize(int* width, int* height)
@@ -176,11 +182,33 @@ void Renderer::getWindowSize(int* width, int* height)
 void Renderer::drawValidMoves(Piece piece, Piece** pieces)
 {
 	std::vector<std::vector<int>> validMoves = piece.getValidMoves(pieces, false);
+    float dx = this->squareSizeX / 4;
+    float dy = this->squareSizeY / 4;
+    float offsetX = (this->squareSizeX - dx) / 2;
+    float offsetY = (this->squareSizeY - dy) / 2;
+
 	for (auto& move : validMoves)
 	{
-		SDL_Rect rect = { move[0] * this->squareSizeX, move[1] * this->squareSizeY, this->squareSizeX, this->squareSizeY};
-		SDL_SetRenderDrawColor(this->renderer, 0, 255, 0, 255);
-		SDL_RenderDrawRect(this->renderer, &rect);
+        if (pieces[move[1]][move[0]].getPieceType() != NONE)
+        {
+            SDL_Rect rect =
+            {
+                1 + move[0] * this->squareSizeX,
+                1 + move[1] * this->squareSizeY,
+                this->squareSizeX, this->squareSizeY
+            };
+            SDL_RenderCopy(this->renderer, this->moveTexture2, nullptr, &rect);
+        }
+        else
+        {
+            SDL_Rect rect =
+            {
+                move[0] * this->squareSizeX + offsetX,
+                move[1] * this->squareSizeY + offsetY,
+                dx, dy
+            };
+            SDL_RenderCopy(this->renderer, this->moveTexture, nullptr, &rect);
+        }
 	}
 }
 

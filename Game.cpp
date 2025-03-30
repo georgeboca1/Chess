@@ -1,10 +1,13 @@
-#include <cstdio>
+#include <stdio.h>
 #include <math.h>
+#include <string>
 
 #include "Game.h"
 #include "TableHandler.h"
 #include "Piece.h"
 #include "Renderer.h"
+#include "Parser.h"
+
 
 
 Game::Game()
@@ -15,6 +18,10 @@ Game::Game()
     this->renderer->getWindowSize(&this->windowWidth, &this->windowHeight);
     this->pieceSelected = false;
     this->playerTurn = true;
+    this->stockFishDelay = 0;
+    stockfish.sendCommand("uci");
+    stockfish.sendCommand("isready");
+    while (!stockfish.isReady());
 }
 
 Game::~Game()
@@ -35,6 +42,7 @@ void Game::loop()
     Uint32 startTicks = SDL_GetTicks();
     int frameRateCount = 0;
     SDL_MouseButtonEvent mousePressed = {};
+    
     // Main loop
     while (isRunning) 
     {
@@ -51,9 +59,10 @@ void Game::loop()
                 case SDL_MOUSEBUTTONDOWN:
                     if (event.button.button == 1)
                     {
+						bool validMove = false;
                         int x = event.button.x / (this->windowWidth / 8);
                         int y = event.button.y / (this->windowHeight / 8);
-						if (pieceSelected) //&& this->table->getPieceAtCoordinate(y, x).getPieceType() == NONE)
+						if (pieceSelected && playerTurn)
                         {
                             this->renderer->drawValidMoves(this->selectedPiece, this->table->getBoard());
                             std::vector<std::vector<int>> moves = this->selectedPiece.getValidMoves(this->table->getBoard(), false);
@@ -61,18 +70,35 @@ void Game::loop()
                             {
                                 if (move[0] == x && move[1] == y)
                                 {
-                                    this->table->removePieceAtCoordinate(this->selectedPiece.getX(), this->selectedPiece.getY());
+                                    this->lastX = this->selectedPiece.getX();
+                                    this->lastY = this->selectedPiece.getY();
+                                    this->newX = y;
+                                    this->newY = x;
+                                    this->table->removePieceAtCoordinate(this->lastX, this->lastY);
                                     this->selectedPiece.changeCoordinates(x, y);
                                     this->table->putPieceAtCoordinate(this->selectedPiece, y, x);
-                                    this->table->debug_printTable();
                                     this->moveMade = true;
                                     this->pieceSelected = false;
                                     this->selectedPiece = Piece();
 									this->playerTurn = !this->playerTurn;
+
+                                    
+									validMove = true;
                                 }
                             }
+                            if (!validMove)
+                            {
+                                this->renderer->drawPressedRectangle(event.button.x, event.button.y);
+                                int x = event.button.x / (this->windowWidth / 8);
+                                int y = event.button.y / (this->windowHeight / 8);
+                                this->drawRedSquare = true;
+                                this->redSquareX = event.button.x;
+                                this->redSquareY = event.button.y;
+                                this->selectedPiece = this->table->getPieceAtCoordinate(y, x);
+                            }
+
                         }
-                        else
+						else if (this->table->getPieceAtCoordinate(y, x).getPieceType() != NONE && this->table->getPieceAtCoordinate(y, x).getPieceColor() != BLACK)
                         {
                             this->renderer->drawPressedRectangle(event.button.x, event.button.y);
                             int x = event.button.x / (this->windowWidth / 8);
@@ -100,7 +126,8 @@ void Game::loop()
         this->renderer->clear();
         this->renderer->drawBoard();
         this->renderer->drawPieces(this->table->getBoard());
-        this->renderer->drawValidMoves(this->selectedPiece, this->table->getBoard());
+        
+        if (playerTurn) this->renderer->drawValidMoves(this->selectedPiece, this->table->getBoard());
 
         if (this->drawRedSquare)
             this->renderer->drawPressedRectangle(this->redSquareX, this->redSquareY);
@@ -116,6 +143,30 @@ void Game::loop()
         {
             this->drawRedSquare = false;
             this->moveMade = false;
+        }
+
+        if (!this->playerTurn)
+        {
+            if (this->stockFishDelay < 75)
+            {
+                this->stockFishDelay++;
+            }
+            else
+            {
+                stockfish.sendMoves(Parser::coordinatesToAlphabeticForm(lastY, lastX, newX, newY));
+
+                std::string str_response = stockfish.readResponse();
+                std::vector<int> response = Parser::alphabeticFormToCoordinates(str_response);
+
+                stockfish.addMove(Parser::getAlphabeticFormFromString(str_response));
+
+                Piece opponentPiece = this->table->getPieceAtCoordinate(response[0], response[1]);
+                this->table->removePieceAtCoordinate(response[0], response[1]);
+                this->table->putPieceAtCoordinate(opponentPiece, response[2], response[3]);
+
+                playerTurn = !playerTurn;
+                this->stockFishDelay = 0;
+            }
         }
 
         printf("%s", SDL_GetError());

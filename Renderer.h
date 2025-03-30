@@ -14,8 +14,10 @@ class Renderer
 	const char* title;
 	int width, height;
 	SDL_Texture* boardTexture;
-	SDL_Rect boardRect;
 	SDL_Texture* pieceTextures[12];
+	SDL_Texture* moveTexture;
+	SDL_Texture* moveTexture2;
+	SDL_Rect boardRect;
 	int squareSizeX;
 	int squareSizeY;
 

@@ -14,6 +14,29 @@ static bool isSameColor(Piece piece1, Piece piece2) {
 	return false;
 }
 
+static bool isLeftCastlingPossible(Piece** pieces)
+{
+	if 
+	(
+		pieces[7][1].getPieceType() == NONE &&
+		pieces[7][2].getPieceType() == NONE &&
+		pieces[7][3].getPieceType() == NONE &&
+		!isKinginCheck(pieces, WHITE)
+	) return true;
+	return false;
+}
+
+static bool isRightCastlingPossible(Piece** pieces)
+{
+	if
+	(
+		pieces[7][5].getPieceType() == NONE &&
+		pieces[7][6].getPieceType() == NONE &&
+		!isKinginCheck(pieces, WHITE)
+	) return true;
+	return false;
+}
+
 pieceValue getPieceValueFromType(pieceType type) 
 {
 	switch (type) 
@@ -35,6 +58,7 @@ Piece::Piece(pieceType _type, pieceColor _color)
 	this->color = _color;
 	this->value = getPieceValueFromType(_type);
 	this->isPawnFirstMove = true;
+	this->isKingInInitialPosition = true;
 	this->coordinates[0] = 0;
 	this->coordinates[1] = 0;
 }
@@ -46,6 +70,7 @@ Piece::Piece()
 	this->color = NOCOLOR;
 	this->value = NO_VALUE;
 	this->isPawnFirstMove = true;
+	this->isKingInInitialPosition = true;
 	this->coordinates[0] = 0;
 	this->coordinates[1] = 0;
 }
@@ -99,9 +124,13 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces, bool isForChe
 			switch (this->color)
 			{
 				case BLACK:
+					if (!isForCheck && isKinginCheck(pieces,WHITE))
+					{
+						break;
+					}
 					if (!isForCheck)
 					{
-						if (isMoveValid(x + 2, y) && this->isPawnFirstMove && pieces[x + 2][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + 2][y]))
+						if (isMoveValid(x + 2, y) && this->isPawnFirstMove && pieces[x + 2][y].getPieceType() == NONE && pieces[x + 1][y].getPieceType() == NONE && !isSameColor(*this, pieces[x + 2][y]))
 						{
 							validMoves.push_back({ y, x + 1 });
 							validMoves.push_back({ y, x + 2 });
@@ -133,9 +162,13 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces, bool isForChe
 					}
 					break;
 				case WHITE:
+					if (!isForCheck && isKinginCheck(pieces, WHITE))
+					{
+						break;
+					}
 					if (!isForCheck)
 					{
-						if (isMoveValid(x - 2, y) && this->isPawnFirstMove && !pieces[x - 2][y].getPieceType() != NONE && !isSameColor(*this, pieces[x - 2][y]))
+						if (isMoveValid(x - 2, y) && this->isPawnFirstMove && !pieces[x - 2][y].getPieceType() != NONE && pieces[x - 1][y].getPieceType() == NONE && !isSameColor(*this, pieces[x - 2][y]))
 						{
 							validMoves.push_back({ y, x - 1 });
 							validMoves.push_back({ y, x - 2 });
@@ -170,6 +203,10 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces, bool isForChe
 			}
 			break;
 		case ROOK:
+			if (!isForCheck && isKinginCheck(pieces, WHITE))
+			{
+				break;
+			}
 			for (int i = 1; i < 8; i++)
 			{
 				if (isMoveValid(x + i, y) )
@@ -232,6 +269,10 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces, bool isForChe
 			}
 			break;
 		case KNIGHT:
+			if (!isForCheck && isKinginCheck(pieces, WHITE))
+			{
+				break;
+			}
 			if (isMoveValid(x + 2, y + 1) && !isSameColor(*this, pieces[x+2][y+1]) && pieces[x + 2][y + 1].getPieceType() != KING)
 			{
 				validMoves.push_back({ y + 1, x + 2 });
@@ -269,6 +310,10 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces, bool isForChe
 			}
 			break;
 		case BISHOP:
+			if (!isForCheck && isKinginCheck(pieces, WHITE))
+			{
+				break;
+			}
 			for (int i = 1; i < 8; i++)
 			{
 				if (isMoveValid(x + i, y + i))
@@ -387,8 +432,17 @@ std::vector<std::vector<int>> Piece::getValidMoves(Piece** pieces, bool isForChe
 					}
 				}
 			}
+			if (isKingInInitialPosition && !isForCheck)
+			{
+				if (isLeftCastlingPossible(pieces)) validMoves.push_back({ y - 2, x });
+				if (isRightCastlingPossible(pieces)) validMoves.push_back({ y + 2, x });
+			}
 			break;
 		case QUEEN:
+			if (!isForCheck && isKinginCheck(pieces, WHITE))
+			{
+				break;
+			}
 			for (int i = 1; i < 8; i++)
 			{
 				if (isMoveValid(x + i, y))
@@ -551,10 +605,10 @@ bool isKinginCheck(Piece** pieces, pieceColor color)
 	{
 		for (int j = 0; j < 8; j++)
 		{
-			std::vector<std::vector<int>> available_moves = pieces[i][j].getValidMoves(pieces, false);
+			std::vector<std::vector<int>> available_moves = pieces[i][j].getValidMoves(pieces, true);
 			for (int k = 0; k < available_moves.size(); k++)
 			{
-				if (pieces[kingCoords[0]][kingCoords[1]].getPieceColor() != pieces[i][j].getPieceColor())
+				if (kingCoords.size() > 0 && pieces[kingCoords[0]][kingCoords[1]].getPieceColor() != pieces[i][j].getPieceColor())
 				{
 					if (available_moves[k][0] == kingCoords[1] && available_moves[k][1] == kingCoords[0])
 					{
@@ -566,4 +620,9 @@ bool isKinginCheck(Piece** pieces, pieceColor color)
 		}
 	}
 	return false;
+}
+
+void Piece::kingMoved()
+{
+	this->isKingInInitialPosition = false;
 }

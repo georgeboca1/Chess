@@ -40,6 +40,44 @@ bool TableHandler::putPieceAtCoordinate(Piece piece, int x, int y)
 	//if (this->board[y * 8 + x].has_value()) printf("Eaten a piece!\n");
 	this->board[x][y] = piece;
 	this->board[x][y].changePawnFirstMove(false);
+
+	if (this->board[x][y].getPieceType() == KING)
+	{
+		if (this->board[x][y].getPieceColor() == WHITE)
+		{
+			if (x == 7 && y == 2)
+			{
+				this->board[x][y + 1] = Piece(ROOK,WHITE);
+				this->board[x][y + 1].changeCoordinates(x, y + 1);
+				this->removePieceAtCoordinate(7, 0);
+			}
+
+			if (x == 7 && y == 6)
+			{
+				this->board[x][y - 1] = Piece(ROOK, WHITE);
+				this->board[x][y - 1].changeCoordinates(x, y - 1);
+				this->removePieceAtCoordinate(7, 7);
+			}
+		}
+		if (this->board[x][y].getPieceColor() == BLACK)
+		{
+			if (x == 0 && y == 2)
+			{
+				this->board[x][y + 1] = Piece(ROOK, WHITE);
+				this->board[x][y + 1].changeCoordinates(x, y + 1);
+				this->removePieceAtCoordinate(7, 0);
+			}
+
+			if (x == 0 && y == 6)
+			{
+				this->board[x][y - 1] = Piece(ROOK, WHITE);
+				this->board[x][y - 1].changeCoordinates(x, y - 1);
+				this->removePieceAtCoordinate(7, 7);
+			}
+		}
+		this->board[x][y].kingMoved();
+	}
+
 	this->board[x][y].changeCoordinates(x, y);
 	return true;
 
@@ -57,11 +95,12 @@ std::vector<int> TableHandler::getPieceCoordinates(pieceType type, pieceColor co
 			}
 		}
 	}
+	return { -1, -1 };
 }
 
 bool TableHandler::removePieceAtCoordinate(int x, int y)
 {
-	if (this->board[x][y].getPieceType() != NONE)
+	if (this->board[x][y].getPieceType() != NONE )
 	{
 		this->board[x][y] = Piece(NONE,NOCOLOR);
 		return true;

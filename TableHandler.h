@@ -6,7 +6,6 @@
 
 #include "Piece.h"
 
-
 class TableHandler
 {
 

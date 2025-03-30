@@ -36,6 +36,8 @@ typedef enum
 pieceValue getPieceValueFromType(pieceType type);
 static bool isMoveValid(int x, int y);
 bool isKinginCheck(Piece** pieces, pieceColor color);
+static bool isLeftCastlingPossible(Piece** pieces);
+static bool isRightCastlingPossible(Piece** pieces);
 
 
 class Piece
@@ -44,6 +46,7 @@ class Piece
 	pieceColor color;
 	pieceValue value;
 	bool isPawnFirstMove;
+	bool isKingInInitialPosition;
 	int coordinates[2];
 
 public:
@@ -52,13 +55,14 @@ public:
 	~Piece();
 
 	const pieceType getPieceType();
-	bool modifyPieceType(pieceType _type);
 	const pieceColor getPieceColor();
 	const pieceValue getPieceValue();
 	void changePawnFirstMove(bool b);
+	bool modifyPieceType(pieceType _type);
 	bool getPawnFirstMove();
 	bool changeCoordinates(int x, int y);
 	std::vector<std::vector<int>> getValidMoves(Piece** table, bool isForCheck);
 	int getX();
 	int getY();
+	void kingMoved();
 };
